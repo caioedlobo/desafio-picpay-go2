@@ -1,14 +1,14 @@
-package account
+package user
 
 import (
-	"desafio-picpay-go2/internal/models/account/value_object"
+	"desafio-picpay-go2/internal/models/user/value_object"
 	"errors"
 	"github.com/bojanz/currency"
 	"github.com/google/uuid"
 	"time"
 )
 
-type Account struct {
+type User struct {
 	ID             uuid.UUID
 	FullName       string
 	DocumentNumber string
@@ -19,7 +19,7 @@ type Account struct {
 	CreatedAt      time.Time
 }
 
-func NewAccount(name, documentNumber string, documentType value_object.DocumentType, email value_object.Email, password value_object.Password) (*Account, error) {
+func NewUser(name, documentNumber string, documentType value_object.DocumentType, email value_object.Email, password value_object.Password) (*User, error) {
 	if name == "" {
 		return nil, errors.New("nome não pode ser vazio")
 	}
@@ -36,7 +36,7 @@ func NewAccount(name, documentNumber string, documentType value_object.DocumentT
 		return nil, err
 	}
 
-	return &Account{
+	return &User{
 		ID:             uuid.New(),
 		FullName:       name,
 		DocumentNumber: documentNumber,
