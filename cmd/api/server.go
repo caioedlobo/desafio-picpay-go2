@@ -1,11 +1,11 @@
 package main
 
 import (
-	"desafio-picpay-go2/internal/handlers"
+	"desafio-picpay-go2/internal/handler"
 )
 
 func main() {
-	e := handlers.NewHandler()
+	e := handler.NewHandler()
 	err := e.Listen("1323")
 	if err != nil {
 		panic(err)
