@@ -1,6 +1,6 @@
 package userrepo
 
-import "desafio-picpay-go2/internal/model/user"
+import "desafio-picpay-go2/internal/domain/user"
 
 type UserRepository struct {
 	userRepo *user.User

@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"desafio-picpay-go2/internal/model/user"
+	"desafio-picpay-go2/internal/domain/user"
 	userrepo "desafio-picpay-go2/internal/repository/user"
 )
 

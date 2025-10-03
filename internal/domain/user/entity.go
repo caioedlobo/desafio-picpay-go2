@@ -1,7 +1,7 @@
 package user
 
 import (
-	"desafio-picpay-go2/internal/model/user/value_object"
+	"desafio-picpay-go2/internal/domain/user/value_object"
 	"errors"
 	"github.com/bojanz/currency"
 	"github.com/google/uuid"
