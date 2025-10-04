@@ -10,8 +10,8 @@ import (
 
 type User struct {
 	ID             uuid.UUID
-	FullName       string
-	DocumentNumber string
+	Name           value_object.Name
+	DocumentNumber value_object.DocumentNumber
 	DocumentType   value_object.DocumentType
 	Email          value_object.Email
 	Password       value_object.Password
@@ -19,7 +19,7 @@ type User struct {
 	CreatedAt      time.Time
 }
 
-func NewUser(name, documentNumber string, documentType value_object.DocumentType, email value_object.Email, password value_object.Password) (*User, error) {
+func NewUser(name value_object.Name, documentNumber value_object.DocumentNumber, documentType value_object.DocumentType, email value_object.Email, password value_object.Password) (*User, error) {
 	if name == "" {
 		return nil, errors.New("nome não pode ser vazio")
 	}
@@ -38,7 +38,7 @@ func NewUser(name, documentNumber string, documentType value_object.DocumentType
 
 	return &User{
 		ID:             uuid.New(),
-		FullName:       name,
+		Name:           name,
 		DocumentNumber: documentNumber,
 		DocumentType:   documentType,
 		Email:          email,
