@@ -5,23 +5,24 @@ import (
 	"regexp"
 )
 
-type Email string
-
+var (
+	ErrEmptyEmail   = errors.New("email should not be empty")
+	ErrInvalidEmail = errors.New("email is invalid")
+)
 var EmailRX = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
 
+type Email string
+
 func NewEmail(value string) (Email, error) {
-	if ok, err := ValidEmail(value); !ok {
-		return "", err
+	if value == "" {
+		return "", ErrEmptyEmail
+	}
+	if ok := EmailRX.MatchString(value); !ok {
+		return "", ErrInvalidEmail
 	}
 	return Email(value), nil
 }
 
-func ValidEmail(value string) (bool, error) {
-	if value == "" {
-		return false, errors.New("email não pode ser vazio")
-	}
-	if ok := EmailRX.MatchString(value); !ok {
-		return false, errors.New("email deve ser válido")
-	}
-	return true, nil
+func (e Email) String() string {
+	return string(e)
 }
