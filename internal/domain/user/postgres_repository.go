@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"errors"
 )
 
 type repository struct {
@@ -32,4 +33,30 @@ func (r repository) Save(ctx context.Context, req *User) error {
 	).Scan(&req.ID)
 
 	return err
+}
+
+func (r repository) FindByEmail(ctx context.Context, email string) (*User, error) {
+	query := `
+        SELECT id, name, document_number, document_type, email, password_hash, created_at
+        FROM users
+        WHERE email = $1`
+	var u User
+	err := r.db.QueryRowContext(ctx, query, email).Scan(
+		&u.ID,
+		&u.Name,
+		&u.DocumentNumber,
+		&u.DocumentType,
+		&u.Email,
+		&u.Password,
+		&u.CreatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return &u, nil
 }
