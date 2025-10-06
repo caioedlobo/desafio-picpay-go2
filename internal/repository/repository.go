@@ -1,18 +1,15 @@
 package repository
 
 import (
+	"database/sql"
 	"desafio-picpay-go2/internal/domain/user"
-	userrepo "desafio-picpay-go2/internal/repository/user"
+	"desafio-picpay-go2/internal/domain/user/usecase"
 )
 
-type User interface {
-	CreateUser(*user.User) error
-}
-
 type Repository struct {
-	User
+	userRepo usecase.UserRepository
 }
 
-func NewRepository() *Repository {
-	return &Repository{User: userrepo.New()}
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{userRepo: user.NewRepository(db)}
 }

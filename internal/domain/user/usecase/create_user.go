@@ -1,4 +1,4 @@
-package usecases
+package usecase
 
 import (
 	"context"
@@ -28,20 +28,11 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*user.User, error)
 }
 
-type CreateUserUseCase struct {
-	repo UserRepository
-}
-
-func NewCreateUserCase(repo UserRepository) *CreateUserUseCase {
-	return &CreateUserUseCase{
-		repo: repo,
-	}
-}
-
-func (uc *CreateUserUseCase) Execute(ctx context.Context, input CreateUserRequest) (*CreateUserResponse, error) {
-	if userExists, _ := uc.repo.FindByEmail(ctx, input.Email); userExists != nil {
+func (uc UserUseCase) Execute(ctx context.Context, input CreateUserRequest) (*CreateUserResponse, error) {
+	if userExists, _ := uc.CreateUserRepo.FindByEmail(ctx, input.Email); userExists != nil {
 		return nil, errors.New("email already registered")
 	}
+
 	name, err := value_object.NewName(input.Name)
 	if err != nil {
 		return nil, err
@@ -50,7 +41,6 @@ func (uc *CreateUserUseCase) Execute(ctx context.Context, input CreateUserReques
 	if err != nil {
 		return nil, err
 	}
-
 	docType, err := value_object.NewDocumentType(input.DocumentType)
 	if err != nil {
 		return nil, err
@@ -59,15 +49,16 @@ func (uc *CreateUserUseCase) Execute(ctx context.Context, input CreateUserReques
 	if err != nil {
 		return nil, err
 	}
-
 	password, err := value_object.NewPassword(input.Password)
-
+	if err != nil {
+		return nil, err
+	}
 	u, err := user.NewUser(name, docNumber, docType, email, *password)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = uc.repo.Save(ctx, u); err != nil {
+	if err = uc.CreateUserRepo.Save(ctx, u); err != nil {
 		return nil, err
 	}
 	return &CreateUserResponse{
