@@ -6,15 +6,15 @@ import (
 	"errors"
 )
 
-type repository struct {
+type Repository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) *repository {
-	return &repository{db: db}
+func NewRepository(db *sql.DB) *Repository {
+	return &Repository{db: db}
 }
 
-func (r repository) Save(ctx context.Context, req *User) error {
+func (r Repository) Save(ctx context.Context, req *User) error {
 	query := `INSERT INTO users (id, name, document_number, document_type, email, password, created_at, balance)
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 					RETURNING id`
@@ -35,7 +35,7 @@ func (r repository) Save(ctx context.Context, req *User) error {
 	return err
 }
 
-func (r repository) FindByEmail(ctx context.Context, email string) (*User, error) {
+func (r Repository) FindByEmail(ctx context.Context, email string) (*User, error) {
 	query := `
         SELECT id, name, document_number, document_type, email, password_hash, created_at
         FROM users
