@@ -15,7 +15,7 @@ func NewRepository(db *sql.DB) *Repository {
 }
 
 func (r Repository) Save(ctx context.Context, req *User) error {
-	query := `INSERT INTO users (id, name, document_number, document_type, email, password, created_at, balance)
+	query := `INSERT INTO users (id, name, document_number, document_type, email, password_hash, created_at, balance)
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 					RETURNING id`
 
