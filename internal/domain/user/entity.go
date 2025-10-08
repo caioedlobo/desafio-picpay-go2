@@ -2,7 +2,6 @@ package user
 
 import (
 	"desafio-picpay-go2/internal/domain/user/value_object"
-	"errors"
 	"github.com/bojanz/currency"
 	"github.com/google/uuid"
 	"time"
@@ -20,17 +19,7 @@ type User struct {
 }
 
 func NewUser(name value_object.Name, documentNumber value_object.DocumentNumber, documentType value_object.DocumentType, email value_object.Email, password value_object.Password) (*User, error) {
-	if name == "" {
-		return nil, errors.New("nome não pode ser vazio")
-	}
 
-	if documentNumber == "" {
-		return nil, errors.New("número do documento não pode ser vazio")
-	}
-
-	if password.GetPlaintext() == nil {
-		return nil, errors.New("senha não pode ser vazia")
-	}
 	balance, err := currency.NewAmount("0.0", "BRL")
 	if err != nil {
 		return nil, err
@@ -44,5 +33,6 @@ func NewUser(name value_object.Name, documentNumber value_object.DocumentNumber,
 		Email:          email,
 		Password:       password,
 		Balance:        balance,
+		CreatedAt:      time.Now(),
 	}, nil
 }
