@@ -1,21 +1,18 @@
 package main
 
 import (
-	"context"
-	"database/sql"
-	"desafio-picpay-go2/internal/domain/user"
-	"desafio-picpay-go2/internal/domain/user/usecase"
+	"desafio-picpay-go2/internal/config"
 	"desafio-picpay-go2/internal/infra/container"
 	"desafio-picpay-go2/internal/infra/http/handler"
 	"github.com/labstack/echo/v4"
 )
 
 func main() {
+	env := config.GetConfig()
 	e := echo.New()
-	ctx := context.Background()
-	c := container.NewContainer(ctx)
+	c := container.NewContainer(env)
 	handler.RegisterHandler(e, c)
-	err := e.Start(":1323")
+	err := e.Start(env.Port)
 	if err != nil {
 		panic(err)
 	}

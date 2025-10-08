@@ -1,29 +1,31 @@
 package container
 
 import (
-	"context"
 	"database/sql"
+	"desafio-picpay-go2/internal/config"
 	"desafio-picpay-go2/internal/domain/user"
-	"github.com/jackc/pgx/v5"
 	_ "github.com/lib/pq"
-	"os"
 )
 
 type Container struct {
+	config         *config.Config
 	db             *sql.DB
 	UserService    user.Service
 	UserRepository user.UserRepository
 }
 
-func NewContainer(ctx context.Context) *Container {
-	container := &Container{}
-	container.initInfra(ctx)
+func NewContainer(cfg *config.Config) *Container {
+	container := &Container{
+		config: cfg,
+	}
+	container.initInfra()
 	container.initRepositories()
 	container.initServices()
+	return container
 }
 
-func (c *Container) initInfra(ctx context.Context) {
-	db, err := pgx.Connect(ctx, os.Getenv("DATABASE_URL"))
+func (c *Container) initInfra() {
+	db, err := sql.Open(c.config.DriverName, c.config.PostgresDSN)
 	if err != nil {
 		panic(err)
 	}
