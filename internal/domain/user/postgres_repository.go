@@ -6,6 +6,8 @@ import (
 	"errors"
 )
 
+var ErrUserAlreadyExists = errors.New("user already exists")
+
 type Repository struct {
 	db *sql.DB
 }
@@ -31,8 +33,15 @@ func (r Repository) Save(ctx context.Context, req *User) error {
 		req.CreatedAt,
 		req.Balance,
 	).Scan(&req.ID)
-
-	return err
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrUserAlreadyExists
+		default:
+			return err
+		}
+	}
+	return nil
 }
 
 func (r Repository) FindByEmail(ctx context.Context, email string) (*User, error) {
