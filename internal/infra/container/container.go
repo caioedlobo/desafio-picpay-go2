@@ -1,38 +1,42 @@
 package container
 
 import (
-	"database/sql"
 	"desafio-picpay-go2/internal/config"
 	"desafio-picpay-go2/internal/domain/user"
+	"desafio-picpay-go2/internal/infra/database/pg"
 	_ "github.com/lib/pq"
 )
 
 type Container struct {
 	config         *config.Config
-	db             *sql.DB
+	db             *pg.Database
 	UserService    user.Service
 	UserRepository user.UserRepository
 }
 
-func NewContainer(cfg *config.Config) *Container {
+func NewContainer(cfg *config.Config) (*Container, error) {
 	container := &Container{
 		config: cfg,
 	}
-	container.initInfra()
+	err := container.initInfra()
+	if err != nil {
+		return nil, err
+	}
 	container.initRepositories()
 	container.initServices()
-	return container
+	return container, nil
 }
 
-func (c *Container) initInfra() {
-	db, err := sql.Open(c.config.DriverName, c.config.PostgresDSN)
+func (c *Container) initInfra() error {
+	db, err := pg.NewConnection(c.config.DriverName, c.config.PostgresDSN)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	c.db = db
+	return nil
 }
 func (c *Container) initRepositories() {
-	c.UserRepository = user.NewRepository(c.db)
+	c.UserRepository = user.NewRepository(c.db.DB())
 }
 
 func (c *Container) initServices() {
