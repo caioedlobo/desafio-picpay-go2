@@ -2,8 +2,8 @@ package user
 
 import (
 	"context"
-	"desafio-picpay-go2/internal/common"
 	"desafio-picpay-go2/internal/common/dto"
+	"desafio-picpay-go2/pkg/httputil"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -23,7 +23,7 @@ func (h handler) RegisterUserEndpoints(echo *echo.Echo) {
 
 func (h handler) createUser(e echo.Context) error {
 	var createUserDTO dto.CreateUserRequest
-	err := common.ReadJSON(e, &createUserDTO)
+	err := httputil.ReadRequestBody(e.Response(), e.Request(), &createUserDTO)
 
 	_, err = h.service.Save(context.Background(), createUserDTO)
 
