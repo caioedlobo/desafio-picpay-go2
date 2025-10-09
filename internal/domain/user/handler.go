@@ -21,15 +21,15 @@ func (h handler) RegisterUserEndpoints(echo *echo.Echo) {
 	echo.POST("/users", h.createUser)
 }
 
-func (h handler) createUser(c echo.Context) error {
+func (h handler) createUser(e echo.Context) error {
 	var createUserDTO dto.CreateUserRequest
-	err := common.ReadJSON(c, &createUserDTO)
+	err := common.ReadJSON(e, &createUserDTO)
 
 	_, err = h.service.Save(context.Background(), createUserDTO)
 
 	if err != nil {
-		return c.String(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	return c.NoContent(http.StatusCreated)
+	return e.NoContent(http.StatusCreated)
 }
