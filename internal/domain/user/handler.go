@@ -10,11 +10,11 @@ import (
 )
 
 type handler struct {
-	service   Service
+	service   UserService
 	validator *validator.Validate
 }
 
-func NewHandler(svc Service, v *validator.Validate) *handler {
+func NewHandler(svc UserService, v *validator.Validate) *handler {
 	return &handler{
 		service:   svc,
 		validator: v,

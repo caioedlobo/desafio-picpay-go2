@@ -11,7 +11,7 @@ import (
 type Container struct {
 	config         *config.Config
 	db             *pg.Database
-	UserService    user.Service
+	UserService    user.UserService
 	UserRepository user.UserRepository
 	Validator      *validator.Validate
 }

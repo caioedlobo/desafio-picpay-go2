@@ -9,15 +9,15 @@ import (
 
 var ErrEmailAlreadyExists = errors.New("email already registered")
 
-type Service struct {
+type service struct {
 	repo UserRepository
 }
 
-func NewService(repo UserRepository) *Service {
-	return &Service{repo: repo}
+func NewService(repo UserRepository) *service {
+	return &service{repo: repo}
 }
 
-func (s Service) Register(ctx context.Context, input dto.CreateUserRequest) (*dto.CreateUserResponse, error) {
+func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dto.CreateUserResponse, error) {
 	if userExists, _ := s.repo.FindByEmail(ctx, input.Email); userExists != nil {
 		return nil, ErrEmailAlreadyExists
 	}
