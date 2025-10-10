@@ -17,12 +17,7 @@ func NewService(repo UserRepository) *Service {
 	return &Service{repo: repo}
 }
 
-type UserRepository interface {
-	Save(context.Context, *User) error
-	FindByEmail(context.Context, string) (*User, error)
-}
-
-func (s Service) Save(ctx context.Context, input dto.CreateUserRequest) (*dto.CreateUserResponse, error) {
+func (s Service) Register(ctx context.Context, input dto.CreateUserRequest) (*dto.CreateUserResponse, error) {
 	if userExists, _ := s.repo.FindByEmail(ctx, input.Email); userExists != nil {
 		return nil, ErrEmailAlreadyExists
 	}

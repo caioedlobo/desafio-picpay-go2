@@ -36,7 +36,7 @@ func (h handler) createUser(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	_, err = h.service.Save(context.Background(), createUserDTO)
+	_, err = h.service.Register(context.Background(), createUserDTO)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
