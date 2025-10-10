@@ -4,6 +4,7 @@ import (
 	"desafio-picpay-go2/internal/config"
 	"desafio-picpay-go2/internal/infra/container"
 	"desafio-picpay-go2/internal/infra/http/handler"
+	"desafio-picpay-go2/internal/infra/http/middleware"
 	logger2 "desafio-picpay-go2/internal/infra/logger"
 	"github.com/labstack/echo/v4"
 	"os"
@@ -27,6 +28,7 @@ func main() {
 		os.Exit(1)
 	}
 	ec := echo.New()
+	middleware.Apply(ec)
 
 	handler.RegisterHandler(ec, cont)
 	err = ec.Start(env.Port)

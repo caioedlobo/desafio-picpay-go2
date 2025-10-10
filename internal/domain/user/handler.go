@@ -19,8 +19,8 @@ func NewHandler(svc UserService, v *validator.Validate) *handler {
 		validator: v,
 	}
 }
-func (h handler) RegisterUserEndpoints(echo *echo.Echo) {
-	echo.POST("/users", h.createUser)
+func (h handler) RegisterUserEndpoints(ec *echo.Echo) {
+	ec.POST("/users", h.createUser)
 }
 
 func (h handler) createUser(e echo.Context) error {
