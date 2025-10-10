@@ -1,7 +1,6 @@
 package user
 
 import (
-	"context"
 	"desafio-picpay-go2/internal/common/dto"
 	"desafio-picpay-go2/pkg/httputil"
 	"github.com/go-playground/validator/v10"
@@ -36,7 +35,7 @@ func (h handler) createUser(e echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	_, err = h.service.Register(context.Background(), createUserDTO)
+	_, err = h.service.Register(e.Request().Context(), createUserDTO)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
