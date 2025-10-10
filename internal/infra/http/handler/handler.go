@@ -11,5 +11,5 @@ type Handler struct {
 }
 
 func RegisterHandler(echo *echo.Echo, c *container.Container) {
-	user.NewHandler(c.UserService).RegisterUserEndpoints(echo)
+	user.NewHandler(c.UserService, c.Validator).RegisterUserEndpoints(echo)
 }

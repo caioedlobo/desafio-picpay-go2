@@ -4,17 +4,20 @@ import (
 	"context"
 	"desafio-picpay-go2/internal/common/dto"
 	"desafio-picpay-go2/pkg/httputil"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 type handler struct {
-	service Service
+	service   Service
+	validator *validator.Validate
 }
 
-func NewHandler(svc Service) *handler {
+func NewHandler(svc Service, v *validator.Validate) *handler {
 	return &handler{
-		service: svc,
+		service:   svc,
+		validator: v,
 	}
 }
 func (h handler) RegisterUserEndpoints(echo *echo.Echo) {
@@ -24,6 +27,14 @@ func (h handler) RegisterUserEndpoints(echo *echo.Echo) {
 func (h handler) createUser(e echo.Context) error {
 	var createUserDTO dto.CreateUserRequest
 	err := httputil.ReadRequestBody(e.Response(), e.Request(), &createUserDTO)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	err = h.validator.Struct(createUserDTO)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, err.Error())
+	}
 
 	_, err = h.service.Save(context.Background(), createUserDTO)
 
