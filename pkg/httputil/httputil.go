@@ -1,6 +1,7 @@
 package httputil
 
 import (
+	"desafio-picpay-go2/pkg/strutil"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -63,4 +64,12 @@ func ReadRequestBody(w http.ResponseWriter, r *http.Request, dst any) error {
 	}
 
 	return nil
+}
+
+// WriteJSONResponse writes a JSON response with the specified HTTP status code and the provided data.
+// The data to be encoded as JSON should be passed as the 'dst' parameter.
+func WriteJSON(w http.ResponseWriter, code int, data strutil.Envelope) {
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_ = json.NewEncoder(w).Encode(data)
 }

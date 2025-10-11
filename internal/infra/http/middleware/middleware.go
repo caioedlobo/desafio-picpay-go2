@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"desafio-picpay-go2/pkg/httputil"
+	"desafio-picpay-go2/pkg/strutil"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
@@ -23,7 +25,10 @@ func recoverPanic(next http.Handler) http.Handler {
 				// serverErrorResponse() helper. In turn, this will log the error using
 				// our custom Logger type at the ERROR level and send the client a 500
 				// Internal Server Error response.
-				//TODO: error response
+				httputil.WriteJSON(
+					w,
+					http.StatusInternalServerError,
+					strutil.ErrorEnvelope("the server encountered a problem and could not process your request"))
 			}
 		}()
 		next.ServeHTTP(w, r)
