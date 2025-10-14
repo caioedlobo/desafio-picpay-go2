@@ -10,16 +10,19 @@ import (
 
 type handler struct {
 	service   UserService
+	secretKey string
 	validator *validator.Validate
 }
 
-func NewHandler(svc UserService, v *validator.Validate) *handler {
+func NewHandler(svc UserService, secretKey string, v *validator.Validate) *handler {
 	return &handler{
 		service:   svc,
+		secretKey: secretKey,
 		validator: v,
 	}
 }
 func (h handler) RegisterUserEndpoints(ec *echo.Echo) {
+	//m := middleware.NewWithAuth(h.secretKey)
 	ec.POST("/users", h.createUser)
 }
 

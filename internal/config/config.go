@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/spf13/viper"
 	"sync"
+	"time"
 )
 
 var (
@@ -11,12 +12,14 @@ var (
 )
 
 type Config struct {
-	Port        string `mapstructure:"PORT"`
-	Environment string `mapstructure:"ENVIRONMENT"`
-	AppName     string `mapstructure:"APP_NAME"`
-	Debug       bool   `mapstructure:"DEBUG"`
-	PostgresDSN string `mapstructure:"DB_POSTGRES_DSN"`
-	DriverName  string `mapstructure:"DRIVER_NAME"`
+	Port                   string        `mapstructure:"PORT"`
+	Environment            string        `mapstructure:"ENVIRONMENT"`
+	AppName                string        `mapstructure:"APP_NAME"`
+	Debug                  bool          `mapstructure:"DEBUG"`
+	PostgresDSN            string        `mapstructure:"DB_POSTGRES_DSN"`
+	DriverName             string        `mapstructure:"DRIVER_NAME"`
+	JWTSecretKey           string        `mapstructure:"JWT_SECRET"`
+	JWTAccessTokenDuration time.Duration `mapstructure:"JWT_ACCESS_TOKEN_DURATION"`
 }
 
 func GetConfig() *Config {

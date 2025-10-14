@@ -11,7 +11,7 @@ import (
 
 type Container struct {
 	logger         *log.Logger
-	config         *config.Config
+	Config         *config.Config
 	db             *pg.Database
 	UserService    user.UserService
 	UserRepository user.UserRepository
@@ -20,7 +20,7 @@ type Container struct {
 
 func NewContainer(cfg *config.Config, log *log.Logger) (*Container, error) {
 	container := &Container{
-		config:    cfg,
+		Config:    cfg,
 		logger:    log,
 		Validator: validator.New(validator.WithRequiredStructEnabled()),
 	}
@@ -34,7 +34,7 @@ func NewContainer(cfg *config.Config, log *log.Logger) (*Container, error) {
 }
 
 func (c *Container) initInfra() error {
-	db, err := pg.NewConnection(c.config.DriverName, c.config.PostgresDSN)
+	db, err := pg.NewConnection(c.Config.DriverName, c.Config.PostgresDSN)
 	if err != nil {
 		return err
 	}
