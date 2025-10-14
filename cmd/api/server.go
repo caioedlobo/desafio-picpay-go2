@@ -22,7 +22,7 @@ func main() {
 			)
 		}
 	}()
-	cont, err := container.NewContainer(env)
+	cont, err := container.NewContainer(env, logger)
 	if err != nil {
 		logger.Fatal("failed to initialize container", "error", err)
 		os.Exit(1)

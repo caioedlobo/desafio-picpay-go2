@@ -5,23 +5,30 @@ import (
 	"desafio-picpay-go2/internal/common/dto"
 	"desafio-picpay-go2/internal/domain/user/value_object"
 	"errors"
+	"github.com/charmbracelet/log"
 )
 
 var ErrEmailAlreadyExists = errors.New("email already registered")
 
 type service struct {
 	repo UserRepository
+	log  *log.Logger
 }
 
-func NewService(repo UserRepository) *service {
-	return &service{repo: repo}
+func NewService(repo UserRepository, logger *log.Logger) *service {
+	return &service{
+		repo: repo,
+		log:  logger,
+	}
 }
 
 func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dto.CreateUserResponse, error) {
+	s.log.Debug("trying to register a new user with",
+		"name", input.Name,
+		"email", input.Email)
 	if userExists, _ := s.repo.FindByEmail(ctx, input.Email); userExists != nil {
 		return nil, ErrEmailAlreadyExists
 	}
-
 	name, err := value_object.NewName(input.Name)
 	if err != nil {
 		return nil, err
@@ -48,13 +55,17 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 	}
 
 	if err = s.repo.Save(ctx, u); err != nil {
+		s.log.Error("failed to insert user", "err", err)
 		return nil, err
 	}
-	return &dto.CreateUserResponse{
+
+	userCreated := &dto.CreateUserResponse{
 		Id:             u.ID.String(),
 		Name:           u.Name.String(),
 		DocumentNumber: u.DocumentNumber.String(),
 		DocumentType:   u.DocumentType.String(),
 		Email:          u.Email.String(),
-	}, nil
+	}
+	s.log.Debug("user created successfully: ", userCreated)
+	return userCreated, nil
 }
