@@ -21,9 +21,10 @@ func NewHandler(svc UserService, secretKey string, v *validator.Validate) *handl
 		validator: v,
 	}
 }
-func (h handler) RegisterUserEndpoints(ec *echo.Echo) {
+func (h handler) RegisterUserEndpoints(api *echo.Group) {
 	//m := middleware.NewWithAuth(h.secretKey)
-	ec.POST("/users", h.createUser)
+	api.POST("/users", h.createUser)
+	api.POST("/auth/login", h.login)
 }
 
 func (h handler) createUser(e echo.Context) error {

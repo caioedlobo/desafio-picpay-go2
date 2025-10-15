@@ -11,5 +11,6 @@ type Handler struct {
 }
 
 func RegisterHandler(echo *echo.Echo, c *container.Container) {
-	user.NewHandler(c.UserService, c.Config.JWTSecretKey, c.Validator).RegisterUserEndpoints(echo)
+	api := echo.Group("/api/v1")
+	user.NewHandler(c.UserService, c.Config.JWTSecretKey, c.Validator).RegisterUserEndpoints(api)
 }
