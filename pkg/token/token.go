@@ -8,12 +8,12 @@ import (
 	"time"
 )
 
-func Gen(secretKey, userId string, duration time.Duration) (string, *Claims, error) {
+func Gen(secretKey string, duration time.Duration) (string, *Claims, error) {
 	if len(secretKey) != chacha20poly1305.KeySize {
 		return "", nil, fmt.Errorf("invalid secret key")
 	}
 
-	claims, err := NewClaims(userId, duration)
+	claims, err := NewClaims(duration)
 	if err != nil {
 		return "", nil, fmt.Errorf("failed to create session claims: %w", err)
 	}
