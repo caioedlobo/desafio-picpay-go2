@@ -1,6 +1,9 @@
 package value_object
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"errors"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type Password struct {
 	plaintext *string
@@ -21,4 +24,17 @@ func (p *Password) GetHash() []byte {
 
 func (p *Password) GetPlaintext() *string {
 	return p.plaintext
+}
+
+func Matches(hash []byte, plaintextPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword(hash, []byte(plaintextPassword))
+	if err != nil {
+		switch {
+		case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	return true, nil
 }
