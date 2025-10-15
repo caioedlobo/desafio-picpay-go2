@@ -46,5 +46,5 @@ func (c *Container) initRepositories() {
 }
 
 func (c *Container) initServices() {
-	c.UserService = *user.NewService(c.UserRepository, c.logger)
+	c.UserService = *user.NewService(c.UserRepository, c.logger, c.Config.JWTSecretKey, c.Config.JWTAccessTokenDuration)
 }

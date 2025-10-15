@@ -4,21 +4,31 @@ import (
 	"context"
 	"desafio-picpay-go2/internal/common/dto"
 	"desafio-picpay-go2/internal/domain/user/value_object"
+	"desafio-picpay-go2/pkg/token"
 	"errors"
 	"github.com/charmbracelet/log"
+	"time"
 )
 
-var ErrEmailAlreadyExists = errors.New("email already registered")
+var (
+	ErrEmailAlreadyExists = errors.New("email already registered")
+	ErrPasswordNotMatches = errors.New("password does not match")
+	ErrUserNotFound       = errors.New("user not found")
+)
 
 type service struct {
-	repo UserRepository
-	log  *log.Logger
+	repo                UserRepository
+	log                 *log.Logger
+	secretKey           string
+	accessTokenDuration time.Duration
 }
 
-func NewService(repo UserRepository, logger *log.Logger) *service {
+func NewService(repo UserRepository, logger *log.Logger, secretKey string, accessTokenDuration time.Duration) *service {
 	return &service{
-		repo: repo,
-		log:  logger,
+		repo:                repo,
+		log:                 logger,
+		secretKey:           secretKey,
+		accessTokenDuration: accessTokenDuration,
 	}
 }
 
@@ -68,4 +78,33 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 	}
 	s.log.Debug("user created successfully: ", userCreated)
 	return userCreated, nil
+}
+
+func (s service) Login(ctx context.Context, input dto.LoginRequest) (*dto.LoginResponse, error) {
+	foundUser, err := s.repo.FindByEmail(ctx, input.Email)
+
+	if err != nil {
+		s.log.Debug("error finding user", "err", err, "email", input.Email)
+		return nil, err
+	}
+	if foundUser == nil {
+		s.log.Error(ErrUserNotFound, "email", input.Email)
+		return nil, ErrUserNotFound
+	}
+	match, err := value_object.Matches(foundUser.PasswordHash, input.Password)
+	if err != nil {
+		s.log.Debug("error matching password", "err", err)
+		return nil, err
+	}
+	if !match {
+		s.log.Debug(ErrPasswordNotMatches)
+		return nil, ErrPasswordNotMatches
+	}
+	tkn, _, err := token.Gen(s.secretKey, s.accessTokenDuration)
+	if err != nil {
+		s.log.Debug("error generating token", "err", err)
+		return nil, err
+	}
+
+	return &dto.LoginResponse{AccessToken: tkn}, nil
 }

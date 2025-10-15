@@ -47,3 +47,22 @@ func (h handler) createUser(e echo.Context) error {
 
 	return e.NoContent(http.StatusCreated)
 }
+
+func (h handler) login(e echo.Context) error {
+	var loginReq dto.LoginRequest
+	err := httputil.ReadRequestBody(e.Response(), e.Request(), &loginReq)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	err = h.validator.Struct(loginReq)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnprocessableEntity, err.Error())
+	}
+	resp, err := h.service.Login(e.Request().Context(), loginReq)
+	if err != nil {
+		//TODO: Colocar erro correto
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	return e.JSON(http.StatusOK, resp)
+}

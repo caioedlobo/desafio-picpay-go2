@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"database/sql"
+	"desafio-picpay-go2/internal/infra/database/model"
 	"errors"
 )
 
@@ -44,19 +45,46 @@ func (r Repository) Save(ctx context.Context, req *User) error {
 	return nil
 }
 
-func (r Repository) FindByEmail(ctx context.Context, email string) (*User, error) {
+func (r Repository) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	query := `
         SELECT id, name, document_number, document_type, email, password_hash, created_at
         FROM users
         WHERE email = $1`
-	var u User
+
+	var u model.User
 	err := r.db.QueryRowContext(ctx, query, email).Scan(
 		&u.ID,
 		&u.Name,
 		&u.DocumentNumber,
 		&u.DocumentType,
 		&u.Email,
-		&u.Password,
+		&u.PasswordHash,
+		&u.CreatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return &u, nil
+}
+
+func (r Repository) Login(ctx context.Context, email, password string) (*model.User, error) {
+	query := `
+        SELECT id, name, document_number, document_type, email, password_hash, created_at
+        FROM users
+        WHERE email = $1 and password_hash = $2`
+	var u model.User
+	err := r.db.QueryRowContext(ctx, query, email, password).Scan(
+		&u.ID,
+		&u.Name,
+		&u.DocumentNumber,
+		&u.DocumentType,
+		&u.Email,
+		&u.PasswordHash,
 		&u.CreatedAt,
 	)
 	if err != nil {
