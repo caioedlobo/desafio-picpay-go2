@@ -36,31 +36,43 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 	s.log.Debug("trying to register a new user with",
 		"name", input.Name,
 		"email", input.Email)
-	if userExists, _ := s.repo.FindByEmail(ctx, input.Email); userExists != nil {
-		return nil, fault.NewBadRequest("user already exists3")
+	userExists, err := s.repo.FindByEmail(ctx, input.Email)
+	if err != nil {
+		s.log.Error("error finding user by email", "user", input.Email)
+		return nil, err
+	}
+	if userExists != nil {
+		s.log.Error("user already exists", "user", input.Email)
+		return nil, fault.NewBadRequest("user already exists")
 	}
 	name, err := value_object.NewName(input.Name)
 	if err != nil {
+		s.log.Error("error creating new user", "name", input.Name, "err", err)
 		return nil, err
 	}
 	docNumber, err := value_object.NewDocumentNumber(input.DocumentNumber)
 	if err != nil {
+		s.log.Error("error creating new user", "docNumber", input.DocumentNumber, "err", err)
 		return nil, err
 	}
 	docType, err := value_object.NewDocumentType(input.DocumentType)
 	if err != nil {
+		s.log.Error("error creating new user", "docType", input.DocumentType, "err", err)
 		return nil, err
 	}
 	email, err := value_object.NewEmail(input.Email)
 	if err != nil {
+		s.log.Error("error creating new user", "email", input.Email, "err", err)
 		return nil, err
 	}
 	password, err := value_object.NewPassword(input.Password)
 	if err != nil {
+		s.log.Error("error creating new user password", "err", err)
 		return nil, err
 	}
 	u, err := NewUser(name, docNumber, docType, email, *password)
 	if err != nil {
+		s.log.Error("error creating new user", "err", err)
 		return nil, err
 	}
 
