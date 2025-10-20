@@ -4,10 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"desafio-picpay-go2/internal/infra/database/model"
+	"desafio-picpay-go2/pkg/fault"
 	"errors"
 )
-
-var ErrUserAlreadyExists = errors.New("user already exists")
 
 type Repository struct {
 	db *sql.DB
@@ -37,7 +36,7 @@ func (r Repository) Save(ctx context.Context, req *User) error {
 	if err != nil {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-			return ErrUserAlreadyExists
+			return fault.New("user already exists2", fault.WithError(err))
 		default:
 			return err
 		}

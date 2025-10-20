@@ -2,6 +2,8 @@ package user
 
 import (
 	"desafio-picpay-go2/internal/common/dto"
+	error2 "desafio-picpay-go2/internal/common/error"
+	"desafio-picpay-go2/pkg/fault"
 	"desafio-picpay-go2/pkg/httputil"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -31,12 +33,19 @@ func (h handler) createUser(e echo.Context) error {
 	var createUserDTO dto.CreateUserRequest
 	err := httputil.ReadRequestBody(e.Response(), e.Request(), &createUserDTO)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		fault.NewHTTPError(e.Response(), err)
+		return err
 	}
 
 	err = h.validator.Struct(createUserDTO)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnprocessableEntity, err.Error())
+		fault.NewHTTPError(
+			e.Response(),
+			fault.New(
+				"failed to validate body",
+				fault.WithValidationError(error2.ToFaultErrors(err))),
+		)
+		return err
 	}
 
 	_, err = h.service.Register(e.Request().Context(), createUserDTO)

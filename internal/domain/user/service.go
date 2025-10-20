@@ -4,6 +4,7 @@ import (
 	"context"
 	"desafio-picpay-go2/internal/common/dto"
 	"desafio-picpay-go2/internal/domain/user/value_object"
+	"desafio-picpay-go2/pkg/fault"
 	"desafio-picpay-go2/pkg/token"
 	"errors"
 	"github.com/charmbracelet/log"
@@ -11,9 +12,8 @@ import (
 )
 
 var (
-	ErrEmailAlreadyExists = errors.New("email already registered")
-	ErrPasswordNotMatches = errors.New("password does not match")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrPasswordNotMatches = errors.New("password does not match")
 )
 
 type service struct {
@@ -37,7 +37,7 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 		"name", input.Name,
 		"email", input.Email)
 	if userExists, _ := s.repo.FindByEmail(ctx, input.Email); userExists != nil {
-		return nil, ErrEmailAlreadyExists
+		return nil, fault.NewBadRequest("user already exists3")
 	}
 	name, err := value_object.NewName(input.Name)
 	if err != nil {

@@ -5,10 +5,16 @@ import (
 	"net/http"
 )
 
+type FieldError struct {
+	Field   string `json:"field"`
+	Message string `json:"message"`
+}
+
 type Fault struct {
-	Code    int
-	Err     error
-	Message string
+	Code       int          `json:"-"`
+	Err        error        `json:"-"`
+	Message    string       `json:"message"`
+	FieldError []FieldError `json:"fields,omitempty"`
 }
 
 func New(msg string, options ...func(*Fault)) *Fault {
@@ -31,13 +37,23 @@ func WithHTTPCode(code int) func(*Fault) {
 	}
 }
 
-// WithError sets the error for the fault
+// WithError sets the error for the fault (repository level)
 func WithError(err error) func(*Fault) {
 	return func(f *Fault) {
 		if err == nil {
 			return
 		}
 		f.Err = err
+	}
+}
+
+func WithValidationError(fe []FieldError) func(*Fault) {
+	if fe == nil {
+		return func(f *Fault) {}
+	}
+
+	return func(f *Fault) {
+		f.FieldError = fe
 	}
 }
 
