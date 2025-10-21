@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrPasswordNotMatches = errors.New("password does not match")
+	ErrUserNotFound     = errors.New("user not found")
+	ErrFailedInsertUser = errors.New("failed to insert user")
 )
 
 type service struct {
@@ -49,37 +49,37 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 	name, err := value_object.NewName(input.Name)
 	if err != nil {
 		s.log.Error("error creating new user", "name", input.Name, "err", err)
-		return nil, err
+		return nil, fault.NewBadRequest(err.Error())
 	}
 	docNumber, err := value_object.NewDocumentNumber(input.DocumentNumber)
 	if err != nil {
 		s.log.Error("error creating new user", "docNumber", input.DocumentNumber, "err", err)
-		return nil, err
+		return nil, fault.NewBadRequest(err.Error())
 	}
 	docType, err := value_object.NewDocumentType(input.DocumentType)
 	if err != nil {
 		s.log.Error("error creating new user", "docType", input.DocumentType, "err", err)
-		return nil, err
+		return nil, fault.NewBadRequest(err.Error())
 	}
 	email, err := value_object.NewEmail(input.Email)
 	if err != nil {
 		s.log.Error("error creating new user", "email", input.Email, "err", err)
-		return nil, err
+		return nil, fault.NewBadRequest(err.Error())
 	}
 	password, err := value_object.NewPassword(input.Password)
 	if err != nil {
 		s.log.Error("error creating new user password", "err", err)
-		return nil, err
+		return nil, fault.NewBadRequest(err.Error())
 	}
 	u, err := NewUser(name, docNumber, docType, email, *password)
 	if err != nil {
 		s.log.Error("error creating new user", "err", err)
-		return nil, err
+		return nil, fault.NewBadRequest("error creating new user") //TODO: change error
 	}
 
 	if err = s.repo.Save(ctx, u); err != nil {
-		s.log.Error("failed to insert user", "err", err)
-		return nil, err
+		s.log.Error(ErrFailedInsertUser, "err", err)
+		return nil, ErrFailedInsertUser
 	}
 
 	userCreated := &dto.CreateUserResponse{
