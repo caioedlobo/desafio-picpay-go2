@@ -106,12 +106,12 @@ func (s service) Login(ctx context.Context, input dto.LoginRequest) (*dto.LoginR
 	}
 	match, err := value_object.Matches(foundUser.PasswordHash, input.Password)
 	if err != nil {
-		s.log.Debug("error matching password", "err", err)
+		s.log.Debug("error trying to match password", "err", err)
 		return nil, err
 	}
 	if !match {
-		s.log.Debug(ErrPasswordNotMatches)
-		return nil, ErrPasswordNotMatches
+		s.log.Debug("password does not match", "user", input.Email)
+		return nil, ErrUserNotFound
 	}
 	tkn, _, err := token.Gen(s.secretKey, foundUser.ID, s.accessTokenDuration)
 	if err != nil {
