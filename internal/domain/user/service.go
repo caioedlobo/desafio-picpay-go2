@@ -112,7 +112,7 @@ func (s service) Login(ctx context.Context, input dto.LoginRequest) (*dto.LoginR
 		s.log.Debug(ErrPasswordNotMatches)
 		return nil, ErrPasswordNotMatches
 	}
-	tkn, _, err := token.Gen(s.secretKey, s.accessTokenDuration)
+	tkn, _, err := token.Gen(s.secretKey, foundUser.ID, s.accessTokenDuration)
 	if err != nil {
 		s.log.Debug("error generating token", "err", err)
 		return nil, err

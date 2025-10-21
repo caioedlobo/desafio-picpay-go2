@@ -7,11 +7,13 @@ import (
 )
 
 type Claims struct {
+	UserID string `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
-func NewClaims(duration time.Duration) (*Claims, error) {
+func NewClaims(userId string, duration time.Duration) (*Claims, error) {
 	return &Claims{
+		UserID: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
