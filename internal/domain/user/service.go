@@ -5,6 +5,7 @@ import (
 	"desafio-picpay-go2/internal/common/dto"
 	"desafio-picpay-go2/internal/domain/user/value_object"
 	"desafio-picpay-go2/pkg/fault"
+	"desafio-picpay-go2/pkg/strutil"
 	"desafio-picpay-go2/pkg/token"
 	"errors"
 	"github.com/charmbracelet/log"
@@ -88,7 +89,7 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 		DocumentType:   u.DocumentType.String(),
 		Email:          u.Email.String(),
 	}
-	s.log.Debug("user created successfully: ", userCreated)
+	s.log.Debug("user created successfully", "details", strutil.JSONStringify(userCreated))
 	return userCreated, nil
 }
 
