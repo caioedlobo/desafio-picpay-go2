@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"context"
+	"desafio-picpay-go2/pkg/fault"
 	"desafio-picpay-go2/pkg/token"
-	"errors"
 	"net/http"
 	"strings"
 )
@@ -21,19 +21,20 @@ func NewWithAuth(secretKey string) *middleware {
 func (m *middleware) WithAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		accessToken := r.Header.Get("Authorization")
+
 		tkn, err := validateAccessToken(accessToken)
 		if err != nil {
-			//TODO: Lançar erro
+			fault.NewHTTPError(w, err)
 			return
 		}
 
 		claims, err := token.Verify(m.secretKey, tkn)
 		if err != nil {
 			if strings.Contains(err.Error(), "token has expired") {
-				//TODO: Lançar erro
+				fault.NewHTTPError(w, fault.NewUnauthorized("token has expired"))
 				return
 			}
-			//TODO: Lançar erro
+			fault.NewHTTPError(w, fault.NewUnauthorized("invalid access token"))
 			return
 		}
 		ctx := context.WithValue(r.Context(), AuthKey{}, claims)
@@ -43,17 +44,17 @@ func (m *middleware) WithAuth(next http.Handler) http.Handler {
 
 func validateAccessToken(header string) (string, error) {
 	if strings.TrimSpace(header) == "" {
-		return "", errors.New("missing authentication token")
+		return "", fault.NewUnauthorized("missing authentication token")
 	}
 
 	parts := strings.Fields(header)
 
 	if len(parts) != 2 {
-		return "", errors.New("invalid auth token format")
+		return "", fault.NewUnauthorized("invalid auth token format")
 	}
 
 	if parts[0] != "Bearer" {
-		return "", errors.New("invalid auth token format")
+		return "", fault.NewUnauthorized("invalid auth token format")
 	}
 
 	return parts[1], nil

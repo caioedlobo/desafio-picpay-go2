@@ -33,3 +33,7 @@ func NewHTTPError(w http.ResponseWriter, err error) {
 func NewBadRequest(msg string) *Fault {
 	return New(msg, WithHTTPCode(http.StatusBadRequest))
 }
+
+func NewUnauthorized(msg string) *Fault {
+	return New(msg, WithHTTPCode(http.StatusUnauthorized))
+}
