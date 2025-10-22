@@ -19,13 +19,12 @@ confirm:
 ## docker/up: start the docker container on docker-compose.yml
 .PHONY: docker/up
 docker/up:
-	start "Docker Desktop" "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 	docker-compose up -d
 
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
-	go run ./cmd --db-dsn=${PICPAY_DB_DSN}
+	go run ./cmd/api .
 
 ## db/migration/new name=$1: create a new database migration
 .PHONY: db/migrations/new
