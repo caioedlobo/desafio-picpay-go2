@@ -53,7 +53,8 @@ func (h handler) create(e echo.Context) error {
 	_, err = h.service.Register(e.Request().Context(), createUserDTO)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		fault.NewHTTPError(e.Response(), err)
+		return err
 	}
 
 	return e.NoContent(http.StatusCreated)
