@@ -4,11 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"desafio-picpay-go2/internal/infra/database/model"
-	"desafio-picpay-go2/pkg/fault"
 	"errors"
 )
-
-var ErrRecordNoFound = errors.New("record not found")
 
 type Repository struct {
 	db *sql.DB
@@ -38,7 +35,7 @@ func (r Repository) Save(ctx context.Context, req *User) error {
 	if err != nil {
 		switch {
 		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
-			return fault.New("user already exists2", fault.WithError(err))
+			return ErrUserAlreadyExists
 		default:
 			return err
 		}
@@ -65,7 +62,7 @@ func (r Repository) FindByEmail(ctx context.Context, email string) (*model.User,
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, ErrRecordNoFound
+			return nil, ErrUserNotFound
 		default:
 			return nil, err
 		}
@@ -91,7 +88,7 @@ func (r Repository) Login(ctx context.Context, email, password string) (*model.U
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, nil
+			return nil, ErrUserNotFound
 		default:
 			return nil, err
 		}
@@ -111,7 +108,7 @@ func (r Repository) FindByID(ctx context.Context, userID string) (*model.User, e
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, ErrRecordNoFound
+			return nil, ErrUserNotFound
 		default:
 			return nil, err
 		}

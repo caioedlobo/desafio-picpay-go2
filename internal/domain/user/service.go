@@ -13,11 +13,6 @@ import (
 	"time"
 )
 
-var (
-	ErrUserNotFound     = errors.New("user not found")
-	ErrFailedInsertUser = errors.New("failed to insert user")
-)
-
 type service struct {
 	repo                UserRepository
 	log                 *log.Logger
@@ -38,15 +33,7 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 	s.log.Debug("trying to register a new user with",
 		"name", input.Name,
 		"email", input.Email)
-	userExists, err := s.repo.FindByEmail(ctx, input.Email)
-	if err != nil {
-		s.log.Error("error finding user by email", "user", input.Email)
-		return nil, err
-	}
-	if userExists != nil {
-		s.log.Error("user already exists", "user", input.Email)
-		return nil, fault.NewBadRequest("user already exists")
-	}
+
 	name, err := value_object.NewName(input.Name)
 	if err != nil {
 		s.log.Error("error creating new user", "name", input.Name, "err", err)
@@ -75,12 +62,17 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 	u, err := NewUser(name, docNumber, docType, email, *password)
 	if err != nil {
 		s.log.Error("error creating new user", "err", err)
-		return nil, fault.NewBadRequest("error creating new user") //TODO: change error
+		return nil, fault.NewInternalServerError("error creating new user")
 	}
 
 	if err = s.repo.Save(ctx, u); err != nil {
 		s.log.Error(ErrFailedInsertUser, "err", err)
-		return nil, ErrFailedInsertUser
+		switch {
+		case errors.Is(err, ErrUserAlreadyExists):
+			return nil, fault.NewConflict(ErrUserAlreadyExists.Error())
+		default:
+			return nil, fault.NewInternalServerError(ErrFailedInsertUser.Error())
+		}
 	}
 
 	userCreated := &dto.CreateUserResponse{
@@ -95,16 +87,19 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 }
 
 func (s service) Login(ctx context.Context, input dto.LoginRequest) (*dto.LoginResponse, error) {
-	foundUser, err := s.repo.FindByEmail(ctx, input.Email)
+	s.log.Debug("trying to log user", "email", input.Email)
 
+	foundUser, err := s.repo.FindByEmail(ctx, input.Email)
 	if err != nil {
-		s.log.Debug("error finding user", "err", err, "email", input.Email)
-		return nil, err
+		s.log.Error("error logging user", "email", input.Email, "err", err)
+		switch {
+		case errors.Is(err, ErrUserNotFound):
+			return nil, ErrUserNotFound
+		default:
+			return nil, errors.New("error finding user by email")
+		}
 	}
-	if foundUser == nil {
-		s.log.Error(ErrUserNotFound, "email", input.Email)
-		return nil, ErrUserNotFound
-	}
+
 	match, err := value_object.Matches(foundUser.PasswordHash, input.Password)
 	if err != nil {
 		s.log.Debug("error trying to match password", "err", err)
@@ -129,12 +124,17 @@ func (s service) Get(ctx context.Context) (*dto.UserResponse, error) {
 	c, ok := ctx.Value(middleware.AuthKey{}).(*token.Claims)
 	if !ok {
 		s.log.Error("context does not contain auth key")
-		return nil, fault.NewUnauthorized("access token not provided")
+		return nil, ErrAccessTokenNotProvided
 	}
 	u, err := s.repo.FindByID(ctx, c.UserID)
 	if err != nil {
 		s.log.Error("error finding user", "id", c.UserID, "err", err)
-		return nil, err
+		switch {
+		case errors.Is(err, ErrUserNotFound):
+			return nil, fault.NewBadRequest(ErrUserNotFound.Error())
+		default:
+			return nil, fault.NewInternalServerError("failed to find user by id")
+		}
 	}
 	s.log.Debug("user retrieved successfully")
 
