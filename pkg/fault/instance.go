@@ -37,3 +37,16 @@ func NewBadRequest(msg string) *Fault {
 func NewUnauthorized(msg string) *Fault {
 	return New(msg, WithHTTPCode(http.StatusUnauthorized))
 }
+func NewInternalServerError(message string) *Fault {
+	return New(
+		message,
+		WithHTTPCode(http.StatusInternalServerError),
+	)
+}
+
+func NewConflict(message string) *Fault {
+	return New(
+		message,
+		WithHTTPCode(http.StatusConflict),
+	)
+}
