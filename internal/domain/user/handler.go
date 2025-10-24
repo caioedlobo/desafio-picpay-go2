@@ -3,6 +3,7 @@ package user
 import (
 	"desafio-picpay-go2/internal/common/dto"
 	error2 "desafio-picpay-go2/internal/common/error"
+	"desafio-picpay-go2/internal/infra/http/middleware"
 	"desafio-picpay-go2/pkg/fault"
 	"desafio-picpay-go2/pkg/httputil"
 	"github.com/go-playground/validator/v10"
@@ -24,8 +25,9 @@ func NewHandler(svc UserService, secretKey string, v *validator.Validate) *handl
 	}
 }
 func (h handler) RegisterUserEndpoints(api *echo.Group) {
-	//m := middleware.NewWithAuth(h.secretKey)
+	m := middleware.NewWithAuth(h.secretKey)
 	api.POST("/users", h.create)
+	api.GET("/users/me", h.get, echo.WrapMiddleware(m.WithAuth))
 	api.POST("/auth/login", h.login)
 }
 
@@ -55,6 +57,15 @@ func (h handler) create(e echo.Context) error {
 	}
 
 	return e.NoContent(http.StatusCreated)
+}
+
+func (h handler) get(e echo.Context) error {
+	resp, err := h.service.Get(e.Request().Context())
+	if err != nil {
+		fault.NewHTTPError(e.Response(), err)
+		return err
+	}
+	return e.JSON(http.StatusOK, resp)
 }
 
 func (h handler) login(e echo.Context) error {

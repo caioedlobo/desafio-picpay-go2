@@ -4,6 +4,7 @@ import (
 	"context"
 	"desafio-picpay-go2/internal/common/dto"
 	"desafio-picpay-go2/internal/domain/user/value_object"
+	"desafio-picpay-go2/internal/infra/http/middleware"
 	"desafio-picpay-go2/pkg/fault"
 	"desafio-picpay-go2/pkg/strutil"
 	"desafio-picpay-go2/pkg/token"
@@ -120,4 +121,27 @@ func (s service) Login(ctx context.Context, input dto.LoginRequest) (*dto.LoginR
 	}
 
 	return &dto.LoginResponse{AccessToken: tkn}, nil
+}
+
+func (s service) Get(ctx context.Context) (*dto.UserResponse, error) {
+	s.log.Debug("trying to retrieve signed user")
+
+	c, ok := ctx.Value(middleware.AuthKey{}).(*token.Claims)
+	if !ok {
+		s.log.Error("context does not contain auth key")
+		return nil, fault.NewUnauthorized("access token not provided")
+	}
+	u, err := s.repo.FindByID(ctx, c.UserID)
+	if err != nil {
+		s.log.Error("error finding user", "id", c.UserID, "err", err)
+		return nil, err
+	}
+	s.log.Debug("user retrieved successfully")
+
+	return &dto.UserResponse{
+		Email:          u.Email,
+		Balance:        u.BalanceNumber,
+		DocumentNumber: u.DocumentNumber,
+		Name:           u.Name,
+	}, nil
 }

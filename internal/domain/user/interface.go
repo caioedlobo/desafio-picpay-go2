@@ -9,9 +9,11 @@ import (
 type UserRepository interface {
 	Save(context.Context, *User) error
 	FindByEmail(context.Context, string) (*model.User, error)
+	FindByID(ctx context.Context, userID string) (*model.User, error)
 }
 
 type UserService interface {
 	Register(context.Context, dto.CreateUserRequest) (*dto.CreateUserResponse, error)
 	Login(context.Context, dto.LoginRequest) (*dto.LoginResponse, error)
+	Get(ctx context.Context) (*dto.UserResponse, error)
 }

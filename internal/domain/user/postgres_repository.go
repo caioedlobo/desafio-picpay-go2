@@ -8,6 +8,8 @@ import (
 	"errors"
 )
 
+var ErrRecordNoFound = errors.New("record not found")
+
 type Repository struct {
 	db *sql.DB
 }
@@ -63,7 +65,7 @@ func (r Repository) FindByEmail(ctx context.Context, email string) (*model.User,
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
-			return nil, nil
+			return nil, ErrRecordNoFound
 		default:
 			return nil, err
 		}
@@ -90,6 +92,26 @@ func (r Repository) Login(ctx context.Context, email, password string) (*model.U
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
 			return nil, nil
+		default:
+			return nil, err
+		}
+	}
+	return &u, nil
+}
+
+func (r Repository) FindByID(ctx context.Context, userID string) (*model.User, error) {
+	query := `select name, document_number, (balance).number, email from users where id = $1`
+	var u model.User
+	err := r.db.QueryRowContext(ctx, query, userID).Scan(
+		&u.Name,
+		&u.DocumentNumber,
+		&u.BalanceNumber,
+		&u.Email,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNoFound
 		default:
 			return nil, err
 		}
