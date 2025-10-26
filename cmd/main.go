@@ -1,21 +1,47 @@
 package main
 
 import (
-	"desafio-picpay-go2/internal/domain/user"
-	"desafio-picpay-go2/internal/domain/user/value_object"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 )
 
-func main() {
-	fmt.Println("Hello World")
+/*func main() {
+	data := "exa"
+	err := validation.Validate(data,
+		validation.Required,       // not empty
+		validation.Length(5, 100), // length between 5 and 100
+		is.URL,                    // is a valid URL
+	)
+	fmt.Println(err)
+	// Output:
+	// must be a valid URL
+}*/
 
-	password, err := value_object.NewPassword("pass123")
-	if err != nil {
-		panic(err)
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,lte=100"`
+}
+
+func main() {
+	validate := validator.New()
+
+	req := LoginRequest{
+		Email:    "email-invalido",
+		Password: "",
 	}
-	user, err := user.NewUser("Caio", "96334365584", "cpf2", "caioeduardolobo@gmail.com", *password)
+
+	err := validate.Struct(req)
 	if err != nil {
-		panic(err)
+		var errorList []string
+
+		for _, e := range err.(validator.ValidationErrors) {
+			msg := fmt.Sprintf("Campo '%s' falhou na regra '%s'", e.Field(), e.Tag())
+			errorList = append(errorList, msg)
+		}
+
+		fmt.Println("Erros de validação:")
+		for _, msg := range errorList {
+			fmt.Println("-", msg)
+		}
 	}
-	fmt.Println(user.DocumentType)
 }

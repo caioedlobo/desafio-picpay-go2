@@ -4,6 +4,7 @@ import (
 	"desafio-picpay-go2/internal/config"
 	"desafio-picpay-go2/internal/domain/user"
 	"desafio-picpay-go2/internal/infra/database/pg"
+	"desafio-picpay-go2/pkg/metric"
 	"github.com/charmbracelet/log"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/lib/pq"
@@ -12,6 +13,7 @@ import (
 type Container struct {
 	logger         *log.Logger
 	Config         *config.Config
+	Metrics        *metric.Metric
 	db             *pg.Database
 	UserService    user.UserService
 	UserRepository user.UserRepository
@@ -22,6 +24,7 @@ func NewContainer(cfg *config.Config, log *log.Logger) (*Container, error) {
 	container := &Container{
 		Config:    cfg,
 		logger:    log,
+		Metrics:   metric.New(),
 		Validator: validator.New(validator.WithRequiredStructEnabled()),
 	}
 	err := container.initInfra()
@@ -46,5 +49,5 @@ func (c *Container) initRepositories() {
 }
 
 func (c *Container) initServices() {
-	c.UserService = *user.NewService(c.UserRepository, c.logger, c.Config.JWTSecretKey, c.Config.JWTAccessTokenDuration)
+	c.UserService = *user.NewService(c.UserRepository, c.logger, c.Metrics, c.Config.JWTSecretKey, c.Config.JWTAccessTokenDuration)
 }

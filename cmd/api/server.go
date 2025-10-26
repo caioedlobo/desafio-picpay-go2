@@ -7,6 +7,7 @@ import (
 	"desafio-picpay-go2/internal/infra/http/middleware"
 	logger2 "desafio-picpay-go2/internal/infra/logger"
 	"github.com/labstack/echo/v4"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"os"
 	"runtime/debug"
 )
@@ -28,8 +29,8 @@ func main() {
 		os.Exit(1)
 	}
 	ec := echo.New()
-	middleware.Apply(ec)
-
+	middleware.Apply(ec, middleware.Config{Metrics: cont.Metrics})
+	ec.GET("/metrics", echo.WrapHandler(promhttp.HandlerFor(cont.Metrics.Registry(), promhttp.HandlerOpts{})))
 	handler.RegisterHandler(ec, cont)
 	err = ec.Start(env.Port)
 	if err != nil {

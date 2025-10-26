@@ -6,6 +6,7 @@ import (
 	"desafio-picpay-go2/internal/domain/user/value_object"
 	"desafio-picpay-go2/internal/infra/http/middleware"
 	"desafio-picpay-go2/pkg/fault"
+	"desafio-picpay-go2/pkg/metric"
 	"desafio-picpay-go2/pkg/strutil"
 	"desafio-picpay-go2/pkg/token"
 	"errors"
@@ -16,14 +17,16 @@ import (
 type service struct {
 	repo                UserRepository
 	log                 *log.Logger
+	metrics             *metric.Metric
 	secretKey           string
 	accessTokenDuration time.Duration
 }
 
-func NewService(repo UserRepository, logger *log.Logger, secretKey string, accessTokenDuration time.Duration) *service {
+func NewService(repo UserRepository, logger *log.Logger, metrics *metric.Metric, secretKey string, accessTokenDuration time.Duration) *service {
 	return &service{
 		repo:                repo,
 		log:                 logger,
+		metrics:             metrics,
 		secretKey:           secretKey,
 		accessTokenDuration: accessTokenDuration,
 	}
@@ -62,6 +65,7 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 	u, err := NewUser(name, docNumber, docType, email, *password)
 	if err != nil {
 		s.log.Error("error creating new user", "err", err)
+		s.metrics.RecordError("user", "create-user")
 		return nil, fault.NewInternalServerError("error creating new user")
 	}
 
@@ -69,8 +73,10 @@ func (s service) Register(ctx context.Context, input dto.CreateUserRequest) (*dt
 		s.log.Error(ErrFailedInsertUser, "err", err)
 		switch {
 		case errors.Is(err, ErrUserAlreadyExists):
+			s.metrics.RecordError("user", "duplicated-user")
 			return nil, fault.NewConflict(ErrUserAlreadyExists.Error())
 		default:
+			s.metrics.RecordError("user", "insert-user")
 			return nil, fault.NewInternalServerError(ErrFailedInsertUser.Error())
 		}
 	}
@@ -96,6 +102,7 @@ func (s service) Login(ctx context.Context, input dto.LoginRequest) (*dto.LoginR
 		case errors.Is(err, ErrUserNotFound):
 			return nil, ErrUserNotFound
 		default:
+			s.metrics.RecordError("auth", "get-by-email")
 			return nil, errors.New("error finding user by email")
 		}
 	}
@@ -133,6 +140,7 @@ func (s service) Get(ctx context.Context) (*dto.UserResponse, error) {
 		case errors.Is(err, ErrUserNotFound):
 			return nil, fault.NewBadRequest(ErrUserNotFound.Error())
 		default:
+			s.metrics.RecordError("auth", "get-by-id")
 			return nil, fault.NewInternalServerError("failed to find user by id")
 		}
 	}

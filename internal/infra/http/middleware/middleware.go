@@ -2,10 +2,17 @@ package middleware
 
 import (
 	"desafio-picpay-go2/pkg/httputil"
+	"desafio-picpay-go2/pkg/metric"
 	"desafio-picpay-go2/pkg/strutil"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"net/http"
+	"strconv"
 )
+
+type Config struct {
+	Metrics *metric.Metric
+}
 
 func recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -35,6 +42,21 @@ func recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func Apply(ec *echo.Echo) {
+func withMetrics(metrics *metric.Metric) func(handler http.Handler) http.Handler {
+	fmt.Println("got in")
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			statusCode := http.StatusOK
+			w.WriteHeader(statusCode)
+			next.ServeHTTP(w, r)
+
+			status := strconv.Itoa(statusCode)
+			metrics.RecordHTTPRequest(r.Method, r.URL.Path, status)
+		})
+	}
+}
+
+func Apply(ec *echo.Echo, cfg Config) {
 	ec.Use(echo.WrapMiddleware(recoverPanic))
+	ec.Use(echo.WrapMiddleware(withMetrics(cfg.Metrics)))
 }
